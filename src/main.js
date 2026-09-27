@@ -101,26 +101,32 @@ async function convert() {
   const folder = safeName($('#playlist').value, 'My Lok Playlist');
   const tracks = state.tracks.map(track => ({ ...track }));
   const done = [];
+  const failures = [];
   try {
     message('Loading the audio engine. The first run may take a moment…');
     const ffmpeg = await getEngine(p => progress((done.length + p) / tracks.length, `Converting ${done.length + 1} of ${tracks.length}`));
     for (const [index, track] of tracks.entries()) {
       progress(index / tracks.length, `Converting ${index + 1} of ${tracks.length}: ${track.title}`);
-      const blob = await convertFile(ffmpeg, track.file, format);
-      done.push({ blob, name: numberedName(index, track.title, format), source: track.file.name });
+      try {
+        const blob = await convertFile(ffmpeg, track.file, format);
+        done.push({ blob, name: numberedName(index, track.title, format), source: track.file.name, title: safeName(track.title), position: index + 1 });
+      } catch (error) {
+        failures.push(`${track.file.name}: ${error.message}`);
+      }
     }
+    if (!done.length) throw new Error(failures.join('; ') || 'No tracks converted');
     if (done.length === 1) save(done[0].blob, done[0].name);
     else {
       message('Packing your playlist folder…');
       const zip = new JSZip();
       const directory = zip.folder(folder);
       for (const track of done) directory.file(track.name, track.blob);
-      directory.file('playlist.json', JSON.stringify({ schema: 'lok.playlist.v1', name: folder, tracks: done.map((track, index) => ({ position: index + 1, file: track.name, title: safeName(tracks[index].title), originalName: track.source })) }, null, 2));
+      directory.file('playlist.json', JSON.stringify({ schema: 'lok.playlist.v1', name: folder, tracks: done.map(track => ({ position: track.position, file: track.name, title: track.title, originalName: track.source })) }, null, 2));
       const archive = await zip.generateAsync({ type: 'blob', compression: 'STORE' }, metadata => progress(metadata.percent / 100, 'Packing the playlist…'));
       save(archive, `${folder}.zip`);
     }
     progress(1, `Finished ${done.length} track(s)`);
-    message(`Saved ${done.length === 1 ? 'your track' : `${done.length} tracks in ${folder}.zip`}. Check your browser downloads or Files app.`);
+    message(`Saved ${done.length === 1 ? 'your track' : `${done.length} tracks in ${folder}.zip`}.${failures.length ? ` ${failures.length} failed: ${failures.join('; ')}` : ' Check your browser downloads or Files app.'}`, failures.length > 0);
   } catch (error) {
     message(`Conversion stopped after ${done.length} track(s): ${error.message}. Try smaller files or a desktop browser.`, true);
   } finally { state.busy = false; render(); }
