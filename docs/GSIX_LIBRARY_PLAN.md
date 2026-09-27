@@ -90,6 +90,52 @@ Enable Row Level Security on every exposed table. Policies require `user_id = au
 - For a scale illustration, 1,000 members storing 1 GB each is about 1 TB before copies or overhead. Price storage **and** downloads using the current provider price sheet, set spend alerts and abuse limits, and budget support/refunds. Do not publish a price until pilot usage and product rights are reviewed.
 - No automatic upload of locally downloaded files. No public sharing in the first version. Define downgrade grace period and deletion/export policy before charging for storage.
 
+## Growth, repeat use, and long-term scale
+
+### Who the site should serve first
+
+Use one product name, **Lok Transfer**, but give every visitor a route that matches why they arrived. The universal action is to create an ordered Transfer Board; the copy, templates, and next action change by use case.
+
+| Audience | First screen promise | Helpful accessory tool | Return reason |
+| --- | --- | --- | --- |
+| Artists and producers | Turn a loose reference list into a DAW-ready session folder | Session template, filename normalizer, BPM/key notes | Reopen project boards and send files to a new session |
+| DJs and event teams | Build a correctly ordered set folder with source notes | Set builder, clean track labels, export a set sheet | Update a set before each event |
+| Students and researchers | Keep a study playlist, lecture links, and source notes in one ordered board | Study pack, notes, citation/source export | Return for each course or exam block |
+| Podcasters and editors | Collect clips, intros, assets, and rights notes for a cut | Episode asset board, loudness checklist, delivery manifest | Reuse episode templates every week |
+| Independent artists delivering work | Package authorized masters and artwork for collaborators | Release folder template, artwork sizes, delivery checklist | Keep a private project library |
+
+### Acquisition and click-through plan
+
+- Build crawlable GSix guide pages for **playlist organizer**, **audio-file converter**, **DAW-ready folder**, **study media organizer**, and **artist delivery folder**. Each page must describe an actual workflow and link into the matching template; do not market a promise that the site cannot fulfill.
+- Keep the landing page's first action visible: paste a list, choose a template, or add files. Let people make a board before asking them to create a GSix account.
+- Add Lok Transfer to GSix home, Arcade Tools, profile recommendations, relevant Survivor 616 Sound Booth flows, and every future artist page. Use consistent labels: **Open Lok Transfer**, **Save to Transfer Board**, and **Send to Sound Booth**.
+- Use source-safe share links for boards and manifests. A share link can expose a title/order/notes page chosen by its owner; never turn it into a public media mirror.
+- Add referral attribution to outbound GSix links and measure completed boards and exports, not raw click counts alone.
+
+### Make it part of daily use
+
+1. Ship a fast installable home-screen experience with an app icon, an offline recent-board view, and an “open last board” action.
+2. Let people pin reusable templates: Album session, DJ set, Lecture week, Podcast episode, and Survivor 616 Sound Booth pack.
+3. Provide a weekly project digest only when a member enables it: boards with missing files, unfinished exports, and storage nearing its limit.
+4. Keep the private GSix profile as the durable home for Transfer History, recent exports, templates, and Passport Library usage.
+5. Add an explicit Import from Files flow on Survivor 616 and other compatible apps; a generated `lok.playlist.v1` manifest makes handoff predictable even without cloud storage.
+
+### Operating model at scale
+
+- Keep playlist metadata, board state, and search in the database. Keep permitted media in private object storage and issue short-lived download links after checking ownership and entitlement.
+- Do browser conversion locally wherever practical. It keeps the free tier cheap and means a sudden spike in visitors does not become a media-processing bill.
+- Treat any future server processing as a separate paid, rate-limited job class for member-supplied or licensed media. Record source, rights declaration, job cost, and output retention before accepting it.
+- Add quotas, cleanup windows for expired trial uploads, per-account rate limits, and usage alerts before opening large vaults or collaboration spaces.
+- Track a small set of privacy-respecting funnel events: `board_created`, `file_added`, `export_completed`, `manifest_imported`, `home_screen_installed`, `account_created`, and `membership_started`. Avoid storing raw source URLs in analytics.
+
+### Expansion sequence
+
+1. **Discover:** GSix home and Tools shelf, focused landing pages, templates, and public app guide.
+2. **Return:** guest boards, sign-in sync, private history, manifest import/export, and home-screen install.
+3. **Connect:** Survivor 616 and creative-app file handoff, then Passport Library for authorized uploads.
+4. **Grow revenue:** Lock Pass workflow upgrades, suite Passport, storage expansions, collaboration, and creator delivery packs.
+5. **Network:** an opt-in GSix project profile that shows a creator's tools, public boards they choose to share, releases, and links to their games or artist page.
+
 ## Phases and acceptance gates
 
 1. **History MVP:** migration and RLS tests; authenticated save/list/delete/export APIs; transfer page sign-in; private GSix profile tab. Verify one user cannot read another user's rows, unauthenticated visits remain usable, and playlist positions/source links survive sync.
