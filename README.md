@@ -1,6 +1,6 @@
 # Lok Transfer
 
-A browser-based workspace for artists to convert **their own or licensed files** to MP3 or WAV. Multiple files export as a ZIP containing a named playlist folder, numbered tracks, and `playlist.json`. Audio stays on the device; the static site needs no upload server or account.
+A playlist-first workspace: the local desktop runner can save an accessible YouTube playlist as an ordered MP3 folder with a title/source-link manifest, while the Vercel page converts **your own or licensed files** to MP3 or WAV in the browser. The public website prepares the runner command; it does not download YouTube streams itself.
 
 ## Run
 
@@ -22,9 +22,18 @@ npm run dev
 
 The browser controls where downloads land. On iPhone, use the browser share/download flow to save the ZIP to Files, then extract it in Files. A web page cannot silently create a folder in Files. Large media may exceed mobile browser memory; inputs are limited to 200 MB apiece, and ZIP generation also consumes memory. The WASM audio engine downloads on first conversion. MP3 conversion does not improve the quality of a compressed source.
 
-## YouTube and other platforms
+## YouTube playlist desktop runner
 
-YouTube's terms and API policies restrict downloading and extracting streams outside their permitted routes. This product does not scrape or rip YouTube pages or playlists. Creators can download their own uploads using YouTube Studio, preferably use their original master, then import the local file here. Future platform adapters should only use an authorized download/export endpoint and should identify that permission in the interface. Do not send arbitrary URLs to a server-side downloader.
+Install Python 3, Node.js or Deno, and FFmpeg on your computer. Install the current [yt-dlp](https://github.com/yt-dlp/yt-dlp) package:
+
+```bash
+python -m pip install -U "yt-dlp[default]"
+python tools/playlist_runner.py "https://youtube.com/playlist?list=PLRdvEjyh0yFk&si=_rT0Q3wKqvfJ5f3i" --zip
+```
+
+The runner first reads playlist metadata, then saves available MP3 tracks with three-digit order prefixes in `~/Downloads/Lok Playlists/[playlist title]/`. It writes `tracklist.csv` and `playlist.json` with position, title, original video link, file name, and status. `--zip` also creates a ZIP of that folder. Private, deleted, region-blocked, or otherwise unavailable entries are noted as unavailable. The supplied sample playlist resolved to **Lok survivor soundtrack 2** with **18 entries** during metadata inspection on September 27, 2026; actual media downloading depends on the user's network and YouTube access.
+
+YouTube's terms and API policies restrict third-party downloading and audio extraction. A college study purpose does not itself provide content rights or override a platform's terms. Only save media when you have the necessary permission. YouTube Studio and Google Takeout are the official export routes for your own uploads. The public Vercel site is a static frontend; full media jobs need this local runner or a separately hosted worker with costs, authentication, and source rights addressed. Do not treat the browser button as a completed download.
 
 ## Survivor 616 handoff
 

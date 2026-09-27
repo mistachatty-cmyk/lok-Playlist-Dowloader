@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://lok-playlist-dowloader.vercel.app/sitemap.xml
