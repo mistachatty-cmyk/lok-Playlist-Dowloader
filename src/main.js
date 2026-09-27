@@ -3,6 +3,7 @@ import './effects.css';
 import JSZip from 'jszip';
 import { getEngine, convertFile } from './converter.js';
 import { safeName, trackName, numberedName } from './names.js';
+import { parsePlaylistLinks } from './playlist-links.js';
 
 const $ = selector => document.querySelector(selector);
 const state = { tracks: [], busy: false };
@@ -26,6 +27,7 @@ function render() {
   $('#clear').disabled = state.busy || !state.tracks.length;
   $('#browse').disabled = state.busy;
   $('#add-url').disabled = state.busy;
+  $('#bulk-add').disabled = state.busy;
   $('#queue').innerHTML = '';
   if (!state.tracks.length) {
     const empty = document.createElement('div');
@@ -94,6 +96,36 @@ async function addDirectUrl() {
   finally { state.busy = false; render(); }
 }
 
+async function importPlaylistLinks() {
+  let entries;
+  try { entries = parsePlaylistLinks($('#bulk-input').value); }
+  catch (error) { return message(error.message, true); }
+  state.busy = true; render();
+  const failed = [];
+  let added = 0;
+  let totalBytes = 0;
+  for (const [index, entry] of entries.entries()) {
+    message(`Fetching direct file ${index + 1} of ${entries.length}…`);
+    try {
+      const response = await fetch(entry.url, { mode: 'cors', credentials: 'omit' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const length = Number(response.headers.get('content-length'));
+      if (length > maxBytes || totalBytes + length > 500 * 1024 * 1024) throw new Error('File or playlist exceeds browser memory limit');
+      const blob = await response.blob();
+      if (blob.size > maxBytes || totalBytes + blob.size > 500 * 1024 * 1024) throw new Error('File or playlist exceeds browser memory limit');
+      if (blob.type.includes('text/html')) throw new Error('Link returned a web page, not a media file');
+      const path = new URL(entry.url).pathname;
+      const filename = decodeURIComponent(path.split('/').pop());
+      const file = new File([blob], filename, { type: blob.type || 'audio/*' });
+      state.tracks.push({ file, title: entry.title ? safeName(entry.title) : trackName(filename) });
+      totalBytes += blob.size;
+      added++;
+    } catch (error) { failed.push(`Line ${index + 1}: ${error.message}`); }
+  }
+  state.busy = false; render();
+  message(`Imported ${added} of ${entries.length} files.${failed.length ? ` ${failed.join('; ')}` : ' Ready to convert.'}`, failed.length > 0);
+}
+
 async function convert() {
   if (state.busy || !state.tracks.length) return;
   state.busy = true; render();
@@ -140,6 +172,7 @@ $('#dropzone').addEventListener('dragover', event => { event.preventDefault(); $
 $('#dropzone').addEventListener('dragleave', () => $('#dropzone').classList.remove('dragging'));
 $('#dropzone').addEventListener('drop', event => { event.preventDefault(); $('#dropzone').classList.remove('dragging'); if (!state.busy) addFiles(event.dataTransfer.files); });
 $('#add-url').addEventListener('click', addDirectUrl);
+$('#bulk-add').addEventListener('click', importPlaylistLinks);
 $('#source-url').addEventListener('keydown', event => { if (event.key === 'Enter') addDirectUrl(); });
 $('#clear').addEventListener('click', () => { state.tracks = []; render(); message('Playlist cleared.'); $('#progress').hidden = true; });
 $('#convert').addEventListener('click', convert);

@@ -15,6 +15,7 @@ npm run dev
 
 - Import several local audio/video files with picker or drag and drop; rename tracks before export.
 - Paste a direct file URL when the host permits cross-origin browser downloads; page/stream links are not direct media files.
+- Paste up to 30 direct media file links (optionally `Title | URL` or M3U text) to import a full authorized playlist. Browser memory caps the combined import at 500 MB.
 - Convert serially on device to 192 kbps MP3 or 44.1 kHz stereo WAV. One track downloads as a file; multiple tracks download as a ZIP with a playlist folder.
 - Keep files in playlist order with `01 - Title.mp3` naming and a machine-readable `lok.playlist.v1` manifest.
 - Switch on Potato Mode to disable decorative animations, glow, transitions, and the hero ornament. Preference persists locally. Reduced-motion system preference also disables animations.
