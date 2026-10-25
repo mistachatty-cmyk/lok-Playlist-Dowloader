@@ -3,3 +3,4 @@ dist/
 public/ffmpeg/
 __pycache__/
 *.pyc
+.vercel

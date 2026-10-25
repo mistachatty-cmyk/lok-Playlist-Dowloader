@@ -8,34 +8,36 @@ import { parsePlaylistLinks } from './playlist-links.js';
 const $ = selector => document.querySelector(selector);
 const state = { tracks: [], busy: false };
 const maxBytes = 200 * 1024 * 1024;
-let preparedCommand = '';
-$('#youtube-prepare').addEventListener('click', () => {
-  const feedback = $('#youtube-feedback');
-  try {
-    const parsed = new URL($('#youtube-url').value.trim());
-    const id = parsed.searchParams.get('list');
-    if (parsed.protocol !== 'https:' || !['youtube.com', 'www.youtube.com', 'm.youtube.com', 'music.youtube.com'].includes(parsed.hostname) || !/^[A-Za-z0-9_-]{10,}$/.test(id || '')) {
-      throw new Error('Paste a full HTTPS YouTube playlist link containing a list ID.');
-    }
-    preparedCommand = `python tools/playlist_runner.py "https://www.youtube.com/playlist?list=${id}" --zip`;
-    $('#runner-command').textContent = preparedCommand;
-    $('#runner-steps').hidden = false;
-    feedback.textContent = 'Command prepared. Follow the desktop steps below to save the playlist.';
-    feedback.classList.remove('error');
-    $('#runner-steps').scrollIntoView({ behavior: potato.checked ? 'instant' : 'smooth', block: 'nearest' });
-  } catch (error) {
-    $('#runner-steps').hidden = true;
-    feedback.textContent = error.message;
-    feedback.classList.add('error');
-  }
-});
-$('#copy-command').addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText(preparedCommand);
-    $('#copy-command').textContent = 'Copied';
-  } catch { $('#copy-command').textContent = 'Select the command to copy'; }
-});
 const potato = $('#potato');
+if (import.meta.env.VITE_ENABLE_YOUTUBE_PLAYLIST_DOWNLOAD === true) {
+  let preparedCommand = '';
+  $('#youtube-prepare').addEventListener('click', () => {
+    const feedback = $('#youtube-feedback');
+    try {
+      const parsed = new URL($('#youtube-url').value.trim());
+      const id = parsed.searchParams.get('list');
+      if (parsed.protocol !== 'https:' || !['youtube.com', 'www.youtube.com', 'm.youtube.com', 'music.youtube.com'].includes(parsed.hostname) || !/^[A-Za-z0-9_-]{10,}$/.test(id || '')) {
+        throw new Error('Paste a full HTTPS YouTube playlist link containing a list ID.');
+      }
+      preparedCommand = `python tools/playlist_runner.py "https://www.youtube.com/playlist?list=${id}" --zip`;
+      $('#runner-command').textContent = preparedCommand;
+      $('#runner-steps').hidden = false;
+      feedback.textContent = 'Command prepared. Follow the desktop steps below to save the playlist.';
+      feedback.classList.remove('error');
+      $('#runner-steps').scrollIntoView({ behavior: potato.checked ? 'instant' : 'smooth', block: 'nearest' });
+    } catch (error) {
+      $('#runner-steps').hidden = true;
+      feedback.textContent = error.message;
+      feedback.classList.add('error');
+    }
+  });
+  $('#copy-command').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(preparedCommand);
+      $('#copy-command').textContent = 'Copied';
+    } catch { $('#copy-command').textContent = 'Select the command to copy'; }
+  });
+}
 try { potato.checked = localStorage.getItem('lok-transfer-potato') === '1'; } catch {}
 document.documentElement.classList.toggle('potato', potato.checked);
 potato.addEventListener('change', () => {
@@ -106,7 +108,7 @@ async function addDirectUrl() {
   let url;
   try { url = new URL(raw); } catch { return message('Enter a valid direct file URL.', true); }
   if (!['https:', 'http:'].includes(url.protocol)) return message('Use an HTTP or HTTPS file URL.', true);
-  if (/(^|\.)youtube\.com$|(^|\.)youtu\.be$|(^|\.)music\.youtube\.com$/i.test(url.hostname)) return message('YouTube page links cannot be imported. Download your own upload in YouTube Studio, then add the file.', true);
+  if (/(^|\.)youtube\.com$|(^|\.)youtu\.be$|(^|\.)music\.youtube\.com$/i.test(url.hostname)) return message('Streaming service pages are not direct media files. Add an authorized file from your device instead.', true);
   if (!/\.(mp3|wav|m4a|aac|flac|ogg|opus|mp4|mov|webm)$/i.test(url.pathname)) return message('This needs to be a direct audio or video file link, ending in a supported extension.', true);
   state.busy = true; render(); message('Fetching the file directly to your browser…');
   try {
